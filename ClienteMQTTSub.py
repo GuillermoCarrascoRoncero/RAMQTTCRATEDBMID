@@ -11,13 +11,16 @@ def on_connect(client, userdata, flags, rc, properties):
 
 def on_message(client, userdata, msg):
     print("Recibido: " + msg.topic + " " + str(msg.payload))
-    topic = msg.topic
-    m_decode = str(msg.payload.decode("utf-8", "ignore"))
-    print("data Received", m_decode)
-    print("Converting from Json to Object")
-    m_in = json.loads(m_decode)  
-    print(m_in)
-    insert_into_cratedb(m_in)
+    try:
+        m_decode = str(msg.payload.decode("utf-8", "ignore"))
+        print("data Received", m_decode)
+        print("Converting from Json to Object")
+        m_in = json.loads(m_decode)  
+        print(m_in)
+        insert_into_cratedb(m_in)
+    except KeyError as e:
+        print("Error con el JSON: {e}")
+    
 
 # Función para insertar datos en CrateDB
 def insert_into_cratedb(data):
