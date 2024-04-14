@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 from crate import client as clientDB
 from datetime import datetime
+import pytz  # Importa la biblioteca pytz
 
 # La callback para cuando el cliente recibe una respuesta CONNACK del servidor
 def on_connect(client, userdata, flags, rc, properties):
@@ -21,15 +22,15 @@ def on_message(client, userdata, msg):
 # Función para insertar datos en CrateDB
 def insert_into_cratedb(data):
     with clientDB.connect("localhost:4200") as connection:
-            cursor = connection.cursor()
-
-            now = datetime.now().isoformat()
-            query = "INSERT INTO ra_table (id_nodo, time, temperatura, humedad, co2, volatiles) VALUES (?, ?, ?, ?, ?, ?)"
-            params = (data["id_nodo"], now, data["temperatura"], data["humedad"], data["co2"], data["volatiles"])
-
-            cursor.execute(query, params)
-            print('Datos enviados a la DB')
-
+        cursor = connection.cursor()
+        now_utc = datetime.utcnow()
+        tz = pytz.timezone('Europe/Madrid')
+        now_with_tz = now_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+        fecha = now_with_tz.isoformat()
+        query = "INSERT INTO ra_table (id_nodo, fecha, temperatura, humedad, co2, volatiles) VALUES (?, ?, ?, ?, ?, ?)"
+        params = (data["id_nodo"], fecha, data["temperatura"], data["humedad"], data["co2"], data["volatiles"])
+        cursor.execute(query, params)
+        print('Datos enviados a la DB')
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)  # Specify MQTT version (e.g., MQTTv311)
 
