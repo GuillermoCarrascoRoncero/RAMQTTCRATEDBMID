@@ -2,9 +2,8 @@ import paho.mqtt.client as mqtt
 import json
 from crate import client as clientDB
 from datetime import datetime
-import pytz  # Importa la biblioteca pytz
+import pytz  
 
-# La callback para cuando el cliente recibe una respuesta CONNACK del servidor
 def on_connect(client, userdata, flags, rc, properties):
     print("Conectado con mqtt " + str(rc))
     client.subscribe("sensor-topic")
